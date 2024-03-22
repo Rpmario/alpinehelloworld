@@ -14,12 +14,12 @@ pipeline {
         bat "docker build -t ${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG} ."
       }
     }
-    stage('Run container based on builded image') {
+    stage('Run container based on built image') {
       steps {
         bat '''
            echo "Clean Environment"
-           docker rm -f $IMAGE_NAME || echo "container does not exist"
-           docker run --name $IMAGE_NAME -d -p ${PORT_EXPOSED}:5000 -e PORT=5000 ${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG}
+           docker rm -f ${IMAGE_NAME} || echo "container does not exist"
+           docker run --name ${IMAGE_NAME} -d -p ${PORT_EXPOSED}:5000 -e PORT=5000 ${ID_DOCKER}/${IMAGE_NAME}:${IMAGE_TAG}
            timeout 5
         '''
       }
@@ -34,8 +34,8 @@ pipeline {
     stage('Clean Container') {
       steps {
         bat '''
-          docker stop $IMAGE_NAME
-          docker rm $IMAGE_NAME
+          docker stop ${IMAGE_NAME}
+          docker rm ${IMAGE_NAME}
         '''
       }
     }
@@ -54,9 +54,9 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'heroku_api_key', variable: 'HEROKU_API_KEY')]) {
           bat "heroku container:login"
-          bat "heroku create $STAGING || echo 'project already exist'"
-          bat "heroku container:push web -a $STAGING"
-          bat "heroku container:release web -a $STAGING"
+          bat "heroku create ${STAGING} || echo 'project already exists'"
+          bat "heroku container:push web -a ${STAGING}"
+          bat "heroku container:release web -a ${STAGING}"
         }
       }
     }
@@ -67,9 +67,9 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'heroku_api_key', variable: 'HEROKU_API_KEY')]) {
           bat "heroku container:login"
-          bat "heroku create $PRODUCTION || echo 'project already exist'"
-          bat "heroku container:push web -a $PRODUCTION"
-          bat "heroku container:release web -a $PRODUCTION"
+          bat "heroku create ${PRODUCTION} || echo 'project already exists'"
+          bat "heroku container:push web -a ${PRODUCTION}"
+          bat "heroku container:release web -a ${PRODUCTION}"
         }
       }
     }
